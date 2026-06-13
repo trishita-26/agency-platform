@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+md# AgencyPro — Marketing Agency Management Platform
 
-## Getting Started
+A modern, production-ready SaaS platform built for marketing agencies to manage leads, track calls, and monitor performance through an intuitive dashboard.
 
-First, run the development server:
+## 🚀 Live Demo
+[https://agency-platform-lyart.vercel.app/login](https://agency-platform-lyart.vercel.app/login)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📌 Features
+
+- **Authentication** — Secure Login, Signup, and Password Reset
+- **Lead Management** — Add, search, filter and delete leads
+- **AI Lead Scoring** — Analyze leads with Groq AI (LLaMA 3.3)
+- **Call Logging** — Track all client calls with status and notes
+- **CRM Pipeline** — Kanban-style board to move leads through stages
+- **Analytics Dashboard** — Real-time charts showing leads and calls by month
+- **Dark / Light Mode** — Full theme toggle support
+- **Responsive Design** — Works on mobile, tablet, and desktop
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Database + Auth | Supabase (PostgreSQL) |
+| UI Components | shadcn/ui + Tailwind CSS |
+| Charts | Recharts |
+| AI Scoring | Groq API (LLaMA 3.3 70B) |
+| Deployment | Vercel |
+| Icons | Lucide React |
+
+## 📁 Project Structure
+agency-platform/
+
+├── app/
+
+│   ├── dashboard/
+
+│   │   ├── page.tsx         # Analytics dashboard
+
+│   │   ├── leads/page.tsx   # Lead management
+
+│   │   ├── calls/page.tsx   # Call logging
+
+│   │   ├── crm/page.tsx     # CRM pipeline
+
+│   │   └── layout.tsx       # Dashboard layout
+
+│   ├── login/page.tsx
+
+│   ├── signup/page.tsx
+
+│   ├── reset-password/page.tsx
+
+│   └── api/
+
+│       └── analyze-lead/route.ts  # AI scoring endpoint
+
+├── components/
+
+│   ├── Sidebar.tsx
+
+│   ├── ThemeToggle.tsx
+
+│   └── ThemeProvider.tsx
+
+└── lib/
+
+└── supabase.ts
+
+## 🗄️ Database Schema
+
+```sql
+-- Leads table
+create table leads (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text,
+  phone text,
+  company text,
+  status text default 'new',
+  source text,
+  notes text,
+  created_at timestamp default now()
+);
+
+-- Calls table
+create table calls (
+  id uuid default gen_random_uuid() primary key,
+  lead_id uuid references leads(id),
+  lead_name text,
+  duration text,
+  notes text,
+  status text default 'completed',
+  created_at timestamp default now()
+);
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ⚙️ Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/agency-platform.git
+cd agency-platform
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install dependencies
+```bash
+npm install
+```
 
-## Learn More
+3. Set up environment variables — create `.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+GROQ_API_KEY=your_groq_api_key
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Run the development server
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🤖 AI Tools Used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Claude (Anthropic)** — Code generation, debugging, architecture planning
+- **Groq API** — AI lead scoring using LLaMA 3.3 70B model
 
-## Deploy on Vercel
+## 👩‍💻 Built By
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Trisita — B.Tech Computer Science (AI/ML), Roorkee Institute of Technology
