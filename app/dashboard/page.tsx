@@ -18,46 +18,80 @@ import {
   Legend,
 } from 'recharts';
 
-const areaData = [
-  { month: 'Jan', leads: 30, calls: 20 },
-  { month: 'Feb', leads: 45, calls: 35 },
-  { month: 'Mar', leads: 60, calls: 50 },
-  { month: 'Apr', leads: 40, calls: 30 },
-  { month: 'May', leads: 80, calls: 65 },
-  { month: 'Jun', leads: 100, calls: 80 },
-];
-
-const COLORS = ['#0f172a', '#3b82f6', '#10b981', '#f59e0b'];
+const COLORS = ['#0f172a', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function DashboardPage() {
   const [leadCount, setLeadCount] = useState(0);
   const [callCount, setCallCount] = useState(0);
+  const [convertedCount, setConvertedCount] = useState(0);
+  const [inProgressCount, setInProgressCount] = useState(0);
   const [pieData, setPieData] = useState<{ name: string; value: number }[]>([]);
+  const [areaData, setAreaData] = useState<{ month: string; leads: number; calls: number }[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const { count: leads } = await supabase
+      // get all leads
+      const { data: leadsData } = await supabase
         .from('leads')
-        .select('*', { count: 'exact', head: true });
+        .select('*');
 
-      const { count: calls } = await supabase
+      // get all calls
+      const { data: callsData } = await supabase
         .from('calls')
-        .select('*', { count: 'exact', head: true });
+        .select('*');
 
-      const { data: statusData } = await supabase
-        .from('leads')
-        .select('status');
+      const leads = leadsData || [];
+      const calls = callsData || [];
 
-      setLeadCount(leads || 0);
-      setCallCount(calls || 0);
+      // stat cards
+      setLeadCount(leads.length);
+      setCallCount(calls.length);
+      setConvertedCount(leads.filter((l) => l.status === 'closed').length);
+      setInProgressCount(leads.filter((l) => l.status === 'interested').length);
 
-      if (statusData) {
-        const counts: Record<string, number> = {};
-        statusData.forEach(({ status }) => {
-          counts[status] = (counts[status] || 0) + 1;
-        });
-        setPieData(
-          Object.entries(counts).map(([name, value]) => ({ name, value }))
+      // pie chart - lead status breakdown
+      const counts: Record<string, number> = {};
+      leads.forEach(({ status }) => {
+        counts[status] = (counts[status] || 0) + 1;
+      });
+      setPieData(
+        Object.entries(counts).map(([name, value]) => ({ name, value }))
+      );
+
+      // area chart - group by month
+      const monthlyLeads: Record<number, number> = {};
+      const monthlyCalls: Record<number, number> = {};
+
+      leads.forEach((l) => {
+        const month = new Date(l.created_at).getMonth();
+        monthlyLeads[month] = (monthlyLeads[month] || 0) + 1;
+      });
+
+      calls.forEach((c) => {
+        const month = new Date(c.created_at).getMonth();
+        monthlyCalls[month] = (monthlyCalls[month] || 0) + 1;
+      });
+
+      // only show months that have data
+      const months = Array.from(
+        new Set([
+          ...Object.keys(monthlyLeads).map(Number),
+          ...Object.keys(monthlyCalls).map(Number),
+        ])
+      ).sort((a, b) => a - b);
+
+      if (months.length === 0) {
+        // if no data at all, show current month with 0
+        const current = new Date().getMonth();
+        setAreaData([{ month: MONTHS[current], leads: 0, calls: 0 }]);
+      } else {
+        setAreaData(
+          months.map((m) => ({
+            month: MONTHS[m],
+            leads: monthlyLeads[m] || 0,
+            calls: monthlyCalls[m] || 0,
+          }))
         );
       }
     };
@@ -68,8 +102,8 @@ export default function DashboardPage() {
   const stats = [
     { label: 'Total Leads', value: leadCount, icon: Users, color: 'text-blue-600' },
     { label: 'Total Calls', value: callCount, icon: Phone, color: 'text-green-600' },
-    { label: 'Converted', value: 0, icon: UserCheck, color: 'text-purple-600' },
-    { label: 'In Progress', value: 0, icon: TrendingUp, color: 'text-orange-600' },
+    { label: 'Converted', value: convertedCount, icon: UserCheck, color: 'text-purple-600' },
+    { label: 'In Progress', value: inProgressCount, icon: TrendingUp, color: 'text-orange-600' },
   ];
 
   return (
