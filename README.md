@@ -1,4 +1,4 @@
-md# AgencyPro — Marketing Agency Management Platform
+# AgencyPro — Marketing Agency Management Platform
 
 A modern, production-ready SaaS platform built for marketing agencies to manage leads, track calls, and monitor performance through an intuitive dashboard.
 
